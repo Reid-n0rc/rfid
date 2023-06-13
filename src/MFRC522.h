@@ -11,8 +11,8 @@
 #define MFRC522_h
 
 // Uncomment one of the following lines to select the desired communication mode
-//#define MFRC522_USE_I2C
-#define MFRC522_USE_SPI
+#define MFRC522_USE_I2C
+//#define MFRC522_USE_SPI
 
 #include "require_cpp11.h"
 #include "deprecated.h"
@@ -24,6 +24,7 @@
 #ifdef MFRC522_USE_I2C
 #include <Wire.h>
 #define COMM_SHIFT 0
+#define byte I2C_ADDR_DEFAULT 0x0b
 #else
 #include <SPI.h>
 #define COMM_SHIFT 1
