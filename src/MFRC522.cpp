@@ -294,9 +294,11 @@ MFRC522::StatusCode MFRC522::PCD_CalculateCRC(	byte *data,		///< In: Pointer to 
 void MFRC522::PCD_Init() {
 	bool hardReset = false;
 
+	#ifndef MFRC522_USE_I2C
 	// Set the chipSelectPin as digital output, do not select the slave yet
 	pinMode(_chipSelectPin, OUTPUT);
 	digitalWrite(_chipSelectPin, HIGH);
+	#endif
 	
 	// If a valid pin number has been set, pull device out of power down / reset state.
 	if (_resetPowerDownPin != UNUSED_PIN) {
@@ -342,12 +344,27 @@ void MFRC522::PCD_Init() {
  */
 void MFRC522::PCD_Init(	byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
 					) {
+	#ifdef MFRC522_USE_I2C
+	PCD_INIT(I2C_ADDR_DEFAULT,resetPowerDownPin); //I2C_ADDR_DEFAULT is defined in MFRC522.h
+	#else						
 	PCD_Init(SS, resetPowerDownPin); // SS is defined in pins_arduino.h
+	#endif
 } // End PCD_Init()
 
 /**
  * Initializes the MFRC522 chip.
  */
+#ifdef MFRC522_USE_I2C
+void MFRC522::PCD_Init(	byte i2cAddress,		///< Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
+						byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
+					) {
+	_i2cAddress = i2cAddress;
+	_resetPowerDownPin = resetPowerDownPin; 
+	// Set the chipSelectPin as digital output, do not select the slave yet
+	PCD_Init();
+} // End PCD_Init()
+
+#else
 void MFRC522::PCD_Init(	byte chipSelectPin,		///< Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
 						byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
 					) {
@@ -356,7 +373,7 @@ void MFRC522::PCD_Init(	byte chipSelectPin,		///< Arduino pin connected to MFRC5
 	// Set the chipSelectPin as digital output, do not select the slave yet
 	PCD_Init();
 } // End PCD_Init()
-
+#endif
 /**
  * Performs a soft reset on the MFRC522 chip and waits for it to be ready again.
  */
