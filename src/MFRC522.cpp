@@ -36,6 +36,7 @@ MFRC522::MFRC522(	byte i2cAddress,		///< Address of the MFRC522 I2C connection.
 				) {
 	_i2cAddress = i2cAddress;
 	_resetPowerDownPin = resetPowerDownPin;
+	Wire.begin();
 } // End constructor
 #else
 /**
@@ -127,12 +128,27 @@ void MFRC522::PCD_WriteRegister(	PCD_Register reg,	///< The register to write to
 byte MFRC522::PCD_ReadRegister(	PCD_Register reg	///< The register to read from. One of the PCD_Register enums.
 								) {
 	byte value;
+	#ifdef MFRC522_USE_I2C
+	Wire.beginTransmission(_i2cAddress);
+	Wire.write(reg);
+	Wire.endTransmission();
+
+	wire.requestFrom(_i2cAddress, 1,true);
+	while (Wire.available() == 0){
+		//waiting for data
+	}
+
+	value = Wire.read();
+
+	#else
 	SPI.beginTransaction(SPISettings(MFRC522_SPICLOCK, MSBFIRST, SPI_MODE0));	// Set the settings to work with SPI bus
 	digitalWrite(_chipSelectPin, LOW);			// Select slave
 	SPI.transfer(0x80 | reg);					// MSB == 1 is for reading. LSB is not used in address. Datasheet section 8.1.2.3.
 	value = SPI.transfer(0);					// Read the value back. Send 0 to stop reading.
 	digitalWrite(_chipSelectPin, HIGH);			// Release slave again
 	SPI.endTransaction(); // Stop using the SPI bus
+	#endif
+
 	return value;
 } // End PCD_ReadRegister()
 
@@ -148,29 +164,61 @@ void MFRC522::PCD_ReadRegister(	PCD_Register reg,	///< The register to read from
 	if (count == 0) {
 		return;
 	}
+
 	//Serial.print(F("Reading ")); 	Serial.print(count); Serial.println(F(" bytes from register."));
+	#ifndef MFRC522_USE_I2C
 	byte address = 0x80 | reg;				// MSB == 1 is for reading. LSB is not used in address. Datasheet section 8.1.2.3.
+	#endif
+
 	byte index = 0;							// Index in values array.
+
+	#ifdef MFRC522_USE_I2C
+	Wire.beginTransmission(_i2cAddress);
+	Wire.write(reg);
+	Wire.endTransmission();
+
+	wire.requestFrom(_i2cAddress, count, true);
+	while (Wire.available() == 0){
+		//waiting for data
+	}
+
+	#else
 	SPI.beginTransaction(SPISettings(MFRC522_SPICLOCK, MSBFIRST, SPI_MODE0));	// Set the settings to work with SPI bus
 	digitalWrite(_chipSelectPin, LOW);		// Select slave
 	count--;								// One read is performed outside of the loop
 	SPI.transfer(address);					// Tell MFRC522 which address we want to read
+	#endif
+
 	if (rxAlign) {		// Only update bit positions rxAlign..7 in values[0]
 		// Create bit mask for bit positions rxAlign..7
 		byte mask = (0xFF << rxAlign) & 0xFF;
 		// Read value and tell that we want to read the same address again.
+		#ifdef MFRC522_USE_I2C
+		byte value = Wire.read();
+		#else
 		byte value = SPI.transfer(address);
+		#endif
+		
 		// Apply mask to both current value of values[0] and the new data in value.
 		values[0] = (values[0] & ~mask) | (value & mask);
 		index++;
 	}
 	while (index < count) {
+		#ifdef MFRC522_USE_I2C
+		values[index] = Wire.read();
+		#else
 		values[index] = SPI.transfer(address);	// Read value and tell that we want to read the same address again.
+		#endif
 		index++;
 	}
+
+	#ifdef MFRC522_USE_I2C
+	values[index] = Wire.read();
+	#else
 	values[index] = SPI.transfer(0);			// Read the final byte. Send 0 to stop reading.
 	digitalWrite(_chipSelectPin, HIGH);			// Release slave again
 	SPI.endTransaction(); // Stop using the SPI bus
+	#endif
 } // End PCD_ReadRegister()
 
 /**
