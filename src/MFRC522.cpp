@@ -28,6 +28,7 @@ MFRC522::MFRC522(	byte resetPowerDownPin	///< Arduino pin connected to MFRC522's
  * Constructor.
  * Prepares the output pins.
  */
+
 MFRC522::MFRC522(	byte chipSelectPin,		///< Arduino pin connected to MFRC522's SPI slave select input (Pin 24, NSS, active low)
 					byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low). If there is no connection from the CPU to NRSTPD, set this to UINT8_MAX. In this case, only soft reset will be used in PCD_Init().
 				) {
