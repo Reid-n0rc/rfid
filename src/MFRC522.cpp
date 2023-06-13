@@ -10,6 +10,34 @@
 /////////////////////////////////////////////////////////////////////////////////////
 // Functions for setting up the Arduino
 /////////////////////////////////////////////////////////////////////////////////////
+
+#ifdef MFRC522_USE_I2C
+/**
+ * Constructor.
+ */
+MFRC522::MFRC522(): MFRC522(I2C_ADDR_DEFAULT, UINT8_MAX) { // I2C_ADDR_DEFAULT is defined in MFRC522.h, UINT8_MAX means there is no connection from Arduino to MFRC522's reset and power down input
+} // End constructor
+
+/**
+ * Constructor.
+ * Prepares the output pins.
+ */
+MFRC522::MFRC522(	byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low). If there is no connection from the CPU to NRSTPD, set this to UINT8_MAX. In this case, only soft reset will be used in PCD_Init().
+				): MFRC522(I2C_ADDR_DEFAULT, resetPowerDownPin) { // I2C_ADDR_DEFAULT is defined in MFRC522.h
+} // End constructor
+
+/**
+ * Constructor.
+ * Prepares the output pins.
+ */
+
+MFRC522::MFRC522(	byte i2cAddress,		///< Address of the MFRC522 I2C connection.
+					byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low). If there is no connection from the CPU to NRSTPD, set this to UINT8_MAX. In this case, only soft reset will be used in PCD_Init().
+				) {
+	_i2cAddress = i2cAddress;
+	_resetPowerDownPin = resetPowerDownPin;
+} // End constructor
+#else
 /**
  * Constructor.
  */
@@ -35,6 +63,8 @@ MFRC522::MFRC522(	byte chipSelectPin,		///< Arduino pin connected to MFRC522's S
 	_chipSelectPin = chipSelectPin;
 	_resetPowerDownPin = resetPowerDownPin;
 } // End constructor
+#endif
+
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Basic interface functions for communicating with the MFRC522
