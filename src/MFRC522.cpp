@@ -133,7 +133,7 @@ byte MFRC522::PCD_ReadRegister(	PCD_Register reg	///< The register to read from.
 	Wire.write(reg);
 	Wire.endTransmission();
 
-	wire.requestFrom(_i2cAddress, 1,true);
+	Wire.requestFrom(_i2cAddress, 1,true);
 	while (Wire.available() == 0){
 		//waiting for data
 	}
@@ -177,7 +177,7 @@ void MFRC522::PCD_ReadRegister(	PCD_Register reg,	///< The register to read from
 	Wire.write(reg);
 	Wire.endTransmission();
 
-	wire.requestFrom(_i2cAddress, count, true);
+	Wire.requestFrom(_i2cAddress, count, true);
 	while (Wire.available() == 0){
 		//waiting for data
 	}
@@ -345,7 +345,7 @@ void MFRC522::PCD_Init() {
 void MFRC522::PCD_Init(	byte resetPowerDownPin	///< Arduino pin connected to MFRC522's reset and power down input (Pin 6, NRSTPD, active low)
 					) {
 	#ifdef MFRC522_USE_I2C
-	PCD_INIT(I2C_ADDR_DEFAULT,resetPowerDownPin); //I2C_ADDR_DEFAULT is defined in MFRC522.h
+	PCD_Init(I2C_ADDR_DEFAULT,resetPowerDownPin); //I2C_ADDR_DEFAULT is defined in MFRC522.h
 	#else						
 	PCD_Init(SS, resetPowerDownPin); // SS is defined in pins_arduino.h
 	#endif

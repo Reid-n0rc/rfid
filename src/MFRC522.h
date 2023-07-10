@@ -24,7 +24,8 @@
 #ifdef MFRC522_USE_I2C
 #include <Wire.h>
 #define COMM_SHIFT 0
-#define byte I2C_ADDR_DEFAULT 0x0b
+const byte I2C_ADDR_DEFAULT = 0x0b ;
+
 #else
 #include <SPI.h>
 #define COMM_SHIFT 1
